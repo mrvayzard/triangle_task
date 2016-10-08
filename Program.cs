@@ -1,40 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+/* Creating by Yablonskyy Denys <mrvayzard@ukr.net> */
 
-namespace Ex2
+using System;
+using System.Collections.Generic;
+
+class Program
 {
-    class Program
+    static List<int> FindCircularPrimeNumbers(int limit)    //finding circular prime numbers
     {
-        static void Main(string[] args)
+        bool flag = false;
+        List<int> prime = new List<int>(); //list of circular prime numbers
+        prime.Add(2);
+        for (int i = 3; i < limit; i++)
         {
-            bool flag = false;
-            List<int> prime = new List<int>();
-            prime.Add(2);
-            for (int i = 3; i < 1000000; i++)
+            string number = i.ToString();
+            for (int j = 0; j < number.Length; j++)
             {
-                string number = i.ToString();
-                for (int j=0; j<number.Length; j++)
+                int num = Convert.ToInt32(number);
+                for (int k = 0; k < prime.Count; k++)
                 {
-                    int num = Convert.ToInt32(number);
-                    for (int k=0; k<prime.Count; k++)
+                    if (num % prime[k] == 0 && num != prime[k]) //if number not circular prime
                     {
-                        if (num % prime[k] == 0 && num!= prime[k])
-                        {
-                            flag = true;
-                            break;
-                        }
+                        flag = true;
+                        break;
                     }
-                    char temp = number[0];
-                    number = number.Remove(0, 1);
-                    number += temp;
                 }
-                if (flag == false)
-                    prime.Add(i);
-                flag = false;
+                //next 3 line is number discharge shift (to left)
+                char temp = number[0];
+                number = number.Remove(0, 1);
+                number += temp;
             }
+            if (flag == false)  //if number is circular prime
+                prime.Add(i);
+            flag = false;
         }
+        return prime;   //return list of circular prime numbers
+    }
+
+    static void Main(string[] args)
+    {
+        int limit = 1000000;    //max number value
+        List <int> circularPrimeNumbers = FindCircularPrimeNumbers(limit);  //list of circular prime numbers
+        Console.WriteLine("Count of cycles prime numbers: " + circularPrimeNumbers.Count);  //output count ofcircular prime numbers to console
+
+        /*Uncomment to output cycles prime numbers*/
+
+        //foreach (var item in cyclesPrimeNumbers)
+        //{
+        //    Console.Write(item + " ");
+        //}
+
+        Console.Read();
     }
 }
