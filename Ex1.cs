@@ -1,112 +1,130 @@
+/*Created by Yablonskyy Denys <mrvayzard@ukr.net>*/
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.IO;
 
-class Program
+namespace Ex1
 {
-    public struct edge
+    class Program
     {
-        public int a, b, cost;
-
-        public edge(int a, int b, int cost)
+        public struct edge
         {
-            this.a = a;
-            this.b = b;
-            this.cost = cost;
-        }
-    }
+            public int a, b, cost;
 
-    static void Main(string[] args)
-    {
-
-        var watch = System.Diagnostics.Stopwatch.StartNew();
-        // the code that you want to measure comes here
-
-        int countVertexes = 0;
-        List<int> weight = new List<int> { };
-        List<edge> ed = new List<edge> { };
-
-        //read data from file
-
-        try
-        {
-            using (StreamReader sr = new StreamReader("Test.txt"))
+            public edge(int a, int b, int cost)
             {
-                String line = null;
-                line = sr.ReadToEnd();
-                string[] rowNums = line.Split();
-                for (int i = 0; i < rowNums.Length; i++)
-                {
-                    if(rowNums[i]!="")
-                        weight.Add(Convert.ToInt32(rowNums[i]));
-                }
-                countVertexes = weight.Count;
+                this.a = a; //first vertex
+                this.b = b; //second vertex
+                this.cost = cost;   //edge weight
             }
         }
-        catch (Exception e)
+
+        static void Solution()
         {
-            Console.WriteLine("The file could not be read:");
-            Console.WriteLine(e.Message);
-        }
+            int countVertexes = 0;  //count of vertex
+            List<int> weight = new List<int> { };   //list of weight all edges
+            List<edge> ed = new List<edge> { }; //list of edges
 
-        //creating edges data
+            //read data from file
 
-        int[,] newMatrix = new int [countVertexes, countVertexes];
-
-        int rowCount = 0;
-        int endValue = 0;
-        int zeroCount = 0;
-        int zeroCount2 = 0;
-        for (int i = 0; i < countVertexes; i++)
-        {
-            zeroCount2=0;
-            for (int j = zeroCount; j < countVertexes; j++)
+            try
             {
-                zeroCount2++;
-                if (rowCount != 0 || j != zeroCount && zeroCount2 <= 3)
+                using (StreamReader sr = new StreamReader("Test.txt"))
                 {
-                    edge smth = new edge(i, j, weight[j]);
-                    ed.Add(smth);
+                    String line = null;
+                    line = sr.ReadToEnd();
+                    string[] rowNums = line.Split();
+                    for (int i = 0; i < rowNums.Length; i++)
+                    {
+                        if (rowNums[i] != "")
+                            weight.Add(Convert.ToInt32(rowNums[i]));
+                    }
+                    countVertexes = weight.Count;
                 }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine("The file could not be read:");
+                Console.WriteLine(e.Message);
+            }
 
-            if (rowCount == endValue)
+            //creating edges data
+
+            int[,] newMatrix = new int[countVertexes, countVertexes];
+
+            int rowCount = 0;
+            int endValue = 0;
+            int zeroCount = 0;
+            int zeroCount2 = 0;
+            for (int i = 0; i < countVertexes; i++)
             {
-                zeroCount += 2;
-                rowCount = 0;
-                endValue++;
+                zeroCount2 = 0;
+                for (int j = zeroCount; j < countVertexes; j++)
+                {
+                    zeroCount2++;
+                    if (rowCount != 0 || j != zeroCount && zeroCount2 <= 3)
+                    {
+                        edge smth = new edge(i, j, weight[j]);
+                        ed.Add(smth);
+                    }
+                }
+
+                if (rowCount == endValue)
+                {
+                    zeroCount += 2;
+                    rowCount = 0;
+                    endValue++;
+                }
+                else
+                {
+                    zeroCount++;
+                    rowCount++;
+                }
             }
-            else
+
+            //Belman-Ford algorithm (modificated)
+
+            int[] distanse = new int[countVertexes];    //an array of distances between the start vertex and the rest
+
+            distanse[0] = 0; //distance to first vertex
+
+            for (int i = 1; i < countVertexes; i++)
             {
-                zeroCount++;
-                rowCount++;
+                distanse[i] = -Int32.MaxValue;  //initialization distanse to rest vertexes
             }
+
+            for (int i = 0; i < countVertexes; i++)
+            {
+                bool flag = false;  //check changes in distance
+                for (int k = 0; k < ed.Count; k++)
+                {
+                    if (distanse[ed[k].b] < distanse[ed[k].a] + ed[k].cost)
+                    {
+                        distanse[ed[k].b] = distanse[ed[k].a] + ed[k].cost;
+                        flag = true;
+                    }
+                }
+                if (flag != true) break;    //if no change
+            }
+
+            //Output result to concole
+            Console.WriteLine("Max way: " + (distanse.Max() + weight[0]));  //max way
         }
 
-        //Belman-Ford algorithm
-
-        int[] d = new int[countVertexes];
-
-        for (int i = 0; i < countVertexes; i++)
+        static void Main(string[] args)
         {
-            d[i] = -999999999;
+
+            var watch = System.Diagnostics.Stopwatch.StartNew();    //measure time (start clock) 
+
+            Solution(); //create task solution (find max way from first vertex)
+
+            watch.Stop();   //stop clock
+            var elapsedMs = watch.ElapsedMilliseconds;  //time of execution
+            Console.WriteLine("Execute time: " + elapsedMs);
+            Console.Read();
         }
-
-        d[0] = 0;
-
-        for (int i = 0; i < countVertexes; i++)
-        {
-            for (int k = 0; k < ed.Count; k++)
-            {
-                if (d[ed[k].b] < d[ed[k].a] + ed[k].cost)
-                    d[ed[k].b] = d[ed[k].a] + ed[k].cost;
-            }
-        }
-
-        Console.WriteLine("Max way: " + (d.Max() + weight[0]));
-        watch.Stop();
-        var elapsedMs = watch.ElapsedMilliseconds;
-        Console.WriteLine(elapsedMs);
-        Console.Read();
+        
     }
-
 }
